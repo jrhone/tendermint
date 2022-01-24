@@ -1,29 +1,36 @@
 package app
 
 import (
-	"math/rand"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_MapValid(t *testing.T) {
-	assert.Equal(t, true, true)
+	worldMap := strings.Split(`
+Foo north=Bar west=Baz south=Qu-ux
+Bar south=Foo west=Bee
+Baz east=Foo west=Qu-ux
+Qu-ux north=Foo
+Bee`, "\n")
+
+	g := &Game{}
+	g.Cities = make(map[string]*City)
+
+	g.loadWorldMap(worldMap)
+	assert.Equal(t, g.mapIsValid(), true)
 }
 
 func Test_MapMissingCity(t *testing.T) {
-	assert.Equal(t, true, true)
-}
-
-func Test_GetWorldMap(t *testing.T) {
-	assert.Equal(t, true, true)
-}
-
-func Test_GameRun(t *testing.T) {
-	rand.Seed(0)
+	worldMap := strings.Split(`
+Foo north=Bar west=Baz south=Qu-ux
+Bar south=Foo west=Bee`, "\n")
 
 	g := &Game{}
-	g.Init(5)
-	g.Start()
-	g.PrintMap()
+	g.Cities = make(map[string]*City)
+
+	g.loadWorldMap(worldMap)
+	assert.Equal(t, g.mapIsValid(), false)
+
 }

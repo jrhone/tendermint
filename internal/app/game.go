@@ -39,7 +39,7 @@ func (g *Game) Init(numAliens int) {
 	g.Cities = make(map[string]*City)
 	g.Aliens = make([]*Alien, 0, g.numAliens)
 
-	g.loadWorldMap()
+	g.loadWorldMap(g.loadFile())
 	if !g.mapIsValid() {
 		log.Fatalln("Invalid map: add a line for each City")
 	}
@@ -65,9 +65,7 @@ func (g *Game) loadFile() []string {
 	return filtered
 }
 
-func (g *Game) loadWorldMap() {
-	worldMap := g.loadFile()
-
+func (g *Game) loadWorldMap(worldMap []string) {
 	// Parse cities and links
 	for _, line := range worldMap {
 		lineParts := strings.Split(line, " ")
