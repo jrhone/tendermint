@@ -10,6 +10,7 @@ Map needs to be fully complete.
 
 # Run
 
+go mod download
 go run cmd/app/main.go <num_aliens>
 
 # World Map
