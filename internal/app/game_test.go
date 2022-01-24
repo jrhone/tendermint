@@ -20,6 +20,7 @@ Bee`, "\n")
 
 	g.loadWorldMap(worldMap)
 	assert.Equal(t, g.mapIsValid(), true)
+	// assert g.Cities
 }
 
 func Test_MapMissingCity(t *testing.T) {
@@ -32,5 +33,5 @@ Bar south=Foo west=Bee`, "\n")
 
 	g.loadWorldMap(worldMap)
 	assert.Equal(t, g.mapIsValid(), false)
-
+	// assert g.Cities and Links
 }
