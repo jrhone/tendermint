@@ -10,8 +10,8 @@ Map does not need to be fully complete.
 
 # Run
 
-go mod download
-go run cmd/app/main.go <num_aliens>
+`go mod download`
+`go run cmd/app/main.go <num_aliens>`
 
 # World Map
 
@@ -19,4 +19,4 @@ Located in `configs/world_map.txt`
 
 # Tests
 
-go test ./...
+`go test ./...`
