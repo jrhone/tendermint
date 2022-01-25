@@ -121,7 +121,7 @@ func (g *Game) initializeAliens() {
 	}
 }
 
-func (g *Game) removeAlien(l []*Alien, item *Alien) []*Alien {
+func removeAlien(l []*Alien, item *Alien) []*Alien {
 	for i, other := range l {
 		if other == item {
 			return append(l[:i], l[i+1:]...)
@@ -130,7 +130,7 @@ func (g *Game) removeAlien(l []*Alien, item *Alien) []*Alien {
 	return l
 }
 
-func (g *Game) removeCity(l []*City, item *City) []*City {
+func removeCity(l []*City, item *City) []*City {
 	for i, other := range l {
 		if other == item {
 			return append(l[:i], l[i+1:]...)
@@ -139,7 +139,7 @@ func (g *Game) removeCity(l []*City, item *City) []*City {
 	return l
 }
 
-func (g *Game) removeLink(l []*Link, item *City) []*Link {
+func removeLink(l []*Link, item *City) []*Link {
 	for i, other := range l {
 		if other.City == item {
 			return append(l[:i], l[i+1:]...)
@@ -148,7 +148,8 @@ func (g *Game) removeLink(l []*Link, item *City) []*Link {
 	return l
 }
 
-func (g *Game) wanderAround(alien *Alien) {
+// WanderAround changes the location of the alien
+func (alien *Alien) WanderAround() {
 	// Aliens wander around randomly following links
 	oldCity := alien.City
 	links := oldCity.Links
@@ -156,7 +157,7 @@ func (g *Game) wanderAround(alien *Alien) {
 
 	if len(links) > 0 {
 		alien.City = links[rand.Intn(len(links))].City
-		oldCity.Aliens = g.removeAlien(oldCity.Aliens, alien)
+		oldCity.Aliens = removeAlien(oldCity.Aliens, alien)
 		alien.City.Aliens = append(alien.City.Aliens, alien)
 		// log.Printf("%s moved to %s from %s", alien.Name, alien.City.Name, oldCity.Name)
 	}
@@ -170,21 +171,20 @@ func (g *Game) fight(city *City) {
 
 	// Kill aliens, remove from map, destroy city
 	for _, alien := range city.Aliens {
-		g.Aliens = g.removeAlien(g.Aliens, alien)
+		g.Aliens = removeAlien(g.Aliens, alien)
 	}
 	for _, otherCity := range g.Cities {
-		otherCity.Links = g.removeLink(otherCity.Links, city)
+		otherCity.Links = removeLink(otherCity.Links, city)
 	}
-	g.Cities = g.removeCity(g.Cities, city)
+	g.Cities = removeCity(g.Cities, city)
 }
 
 func (g *Game) run() {
-	// TODO tell alien to wander
 	for _, alien := range g.Aliens {
-		g.wanderAround(alien)
+		alien.WanderAround()
 	}
-	for _, city := range g.Cities {
-		g.fight(city)
+	for i := len(g.Cities) - 1; i >= 0; i-- {
+		g.fight(g.Cities[i])
 	}
 }
 
