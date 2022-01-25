@@ -22,8 +22,14 @@ type Alien struct {
 // City in the game
 type City struct {
 	Name   string
-	Links  map[*City]string
+	Links  []*Link
 	Aliens []*Alien
+}
+
+// Link connecting a city
+type Link struct {
+	City      *City
+	Direction string
 }
 
 // Game world
@@ -64,7 +70,7 @@ func (g *Game) loadFile() []string {
 	return filtered
 }
 
-func (g *Game) getOrCreateCity(name string, links map[*City]string) *City {
+func (g *Game) getOrCreateCity(name string, links []*Link) *City {
 	for _, c := range g.Cities {
 		if c.Name == name {
 			if links != nil {
@@ -87,12 +93,15 @@ func (g *Game) loadWorldMap(worldMap []string) {
 	for _, line := range worldMap {
 		lineParts := strings.Split(line, " ")
 		name := lineParts[0]
-		links := make(map[*City]string)
+		var links []*Link
 
 		for _, part := range lineParts[1:] {
 			directions := strings.Split(part, "=")
 			city := g.getOrCreateCity(directions[1], nil)
-			links[city] = directions[0]
+			links = append(links, &Link{
+				City:      city,
+				Direction: directions[0],
+			})
 		}
 
 		g.getOrCreateCity(name, links)
@@ -130,6 +139,15 @@ func (g *Game) removeCity(l []*City, item *City) []*City {
 	return l
 }
 
+func (g *Game) removeLink(l []*Link, item *City) []*Link {
+	for i, other := range l {
+		if other.City == item {
+			return append(l[:i], l[i+1:]...)
+		}
+	}
+	return l
+}
+
 func (g *Game) wanderAround(alien *Alien) {
 	// Aliens wander around randomly following links
 	oldCity := alien.City
@@ -137,16 +155,10 @@ func (g *Game) wanderAround(alien *Alien) {
 	alien.NumMoves = alien.NumMoves + 1
 
 	if len(links) > 0 {
-		// todo use struct for link
-		var cities []*City
-		for city := range links {
-			cities = append(cities, city)
-		}
-		alien.City = cities[rand.Intn(len(cities))]
-
-		// log.Printf("%s moved to %s from %s", alien.Name, alien.City.Name, oldCity.Name)
+		alien.City = links[rand.Intn(len(links))].City
 		oldCity.Aliens = g.removeAlien(oldCity.Aliens, alien)
 		alien.City.Aliens = append(alien.City.Aliens, alien)
+		// log.Printf("%s moved to %s from %s", alien.Name, alien.City.Name, oldCity.Name)
 	}
 }
 
@@ -161,7 +173,7 @@ func (g *Game) fight(city *City) {
 		g.Aliens = g.removeAlien(g.Aliens, alien)
 	}
 	for _, otherCity := range g.Cities {
-		delete(otherCity.Links, city)
+		otherCity.Links = g.removeLink(otherCity.Links, city)
 	}
 	g.Cities = g.removeCity(g.Cities, city)
 }
@@ -202,8 +214,8 @@ func (g *Game) PrintMap() {
 		line := make([]string, 1+len(city.Links))
 		line[0] = city.Name
 
-		for city, direction := range city.Links {
-			line = append(line, fmt.Sprintf("%s=%s", direction, city.Name))
+		for _, link := range city.Links {
+			line = append(line, fmt.Sprintf("%s=%s", link.Direction, link.City.Name))
 		}
 		lines = append(lines, strings.Join(line[:], " "))
 	}
